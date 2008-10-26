@@ -2,6 +2,10 @@ module  Railslove
   module Routes
     module NestedUtils
       
+      def self.included(base) #:nodoc:
+        base.prepend_before_filter :get_request_uri
+      end
+      
       private
       def find_nested_types_and_ids(ignore=verbs_to_ignore)
         sections = []
