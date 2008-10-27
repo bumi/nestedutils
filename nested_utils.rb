@@ -16,6 +16,8 @@ module  Railslove
         sections += @request_uri.scan(%r{/(\w+)/([^\/;]*)})
         sections.map! do |controller_name, id|
           next if controllers_to_ignore.include?(controller_name) || verbs_to_ignore.include?(id)
+          #hack to test if the class is defined - i.e. if User is defined 
+          controller_name.singularize.camelize.constantize rescue next 
           [controller_name.singularize.camelize, id]
         end
         sections.delete_if do |x| x.nil? end
