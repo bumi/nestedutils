@@ -7,7 +7,7 @@ module  Railslove
       end
       
       private
-      def find_nested_types_and_ids(ignore=verbs_to_ignore)
+      def find_nested_types_and_ids(verbs_to_ignore=verbs_to_ignore,controllers_to_ignore=controllers_to_ignore)
         sections = []
         if defined?(DEFAULT_HOST) && defined?(Domain) && request.host != DEFAULT_HOST
           domain = Domain.find_by_url(request.host)
@@ -15,7 +15,7 @@ module  Railslove
         end
         sections += @request_uri.scan(%r{/(\w+)/([^\/;]*)})
         sections.map! do |controller_name, id|
-          next if ignore.include?(id)
+          next if controllers_to_ignore.include?(controller_name) || verbs_to_ignore.include?(id)
           [controller_name.singularize.camelize, id]
         end
         sections.delete_if do |x| x.nil? end
