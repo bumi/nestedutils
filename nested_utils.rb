@@ -107,6 +107,9 @@ module  Railslove
       def verbs_to_ignore 
         %w{new edit}
       end
+      def controllers_to_ignore 
+        %w{}
+      end
       
       def normalized_request_uri(request_uri=nil)
         (request_uri || request.env['REQUEST_URI']).gsub(/\?.*/,"")
