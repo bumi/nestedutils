@@ -4,6 +4,7 @@ module  Railslove
       
       def self.included(base) #:nodoc:
         base.prepend_before_filter :get_request_uri
+        base.helper_method :polymorphic_object, :polymorphic_object_url, :current_url, :scoped_url_for, :endmost_index_url
       end
       
       private
