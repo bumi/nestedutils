@@ -2,13 +2,16 @@ module  Railslove
   module Routes
     module NestedUtils
       
+      @@nested_utils_verbs_to_ignore = %w{new edit}
+      @@nested_utils_controllers_to_ignore = %w{admin}
+      
       def self.included(base) #:nodoc:
         base.prepend_before_filter :get_request_uri
         base.helper_method :polymorphic_object, :polymorphic_object_url, :current_url, :scoped_url_for, :endmost_index_url
       end
       
       private
-      def find_nested_types_and_ids(verbs_to_ignore=verbs_to_ignore,controllers_to_ignore=controllers_to_ignore)
+      def find_nested_types_and_ids(verbs_to_ignore=@@nested_utils_verbs_to_ignore,controllers_to_ignore=@@nested_utils_controllers_to_ignore)
         sections = []
         if defined?(DEFAULT_HOST) && defined?(Domain) && request.host != DEFAULT_HOST
           domain = Domain.find_by_url(request.host)
@@ -33,7 +36,7 @@ module  Railslove
         type, id = find_polymorphic_type_and_id(level)
         return nil if type.blank? or id.blank?
         return instance_variable_get("@#{type.underscore}".to_sym) if instance_variables.include?("@#{type.underscore}")
-        instance_variable_set("@#{type.underscore}".to_sym, type.constantize.find_by_param!(id))
+        instance_variable_set("@#{type.underscore}".to_sym, type.constantize.find_by_param!(id)) rescue next 
       end
       
       def polymorphic_object!(level=1)
@@ -52,7 +55,7 @@ module  Railslove
         nested_objects = Array.new
         types_and_ids.each do |type,id|
           nested_types << "#{type.underscore}"
-          nested_objects << (instance_variable_get("@#{type.underscore}".to_sym) || type.constantize.find_by_param(id))
+          nested_objects << (instance_variable_get("@#{type.underscore}".to_sym) || type.constantize.find_by_param(id)) rescue next 
         end
         method_name = nested_types[0..-level].join("_")
         return "/" if method_name.blank?
@@ -62,7 +65,7 @@ module  Railslove
       def init_polymorphic_variables(level=3)
         types_and_ids=find_nested_types_and_ids
         types_and_ids.to(level).each do |type,id|
-          self.instance_variable_set("@#{type.underscore}".to_sym, type.constantize.find_by_param(id))
+          self.instance_variable_set("@#{type.underscore}".to_sym, type.constantize.find_by_param(id)) rescue next
         end
       end
 
@@ -76,7 +79,7 @@ module  Railslove
           endmost = types_and_ids.delete(types_and_ids.last)
           url = "/#{types_and_ids.join("/")}/#{endmost.first}".downcase
         else
-          url = @request_uri.gsub(/\/#{verbs_to_ignore.join("|")}$/,"")
+          url = @request_uri.gsub(/\/#{@@nested_utils_verbs_to_ignore.join("|")}$/,"")
         end
         append = (args.delete(:append) || "")
         url << "/" unless url.ends_with?("/") and append.blank?
@@ -102,13 +105,6 @@ module  Railslove
           [controller_name.pluralize.downcase, id]
         end
         "/#{types_and_ids.join("/").downcase}"
-      end
-      
-      def verbs_to_ignore 
-        %w{new edit}
-      end
-      def controllers_to_ignore 
-        %w{}
       end
       
       def normalized_request_uri(request_uri=nil)
