@@ -89,13 +89,7 @@ module  Railslove
       end
       
       def current_url(args={})
-        return @current_url if @current_url
-        url = normalized_request_uri
-        append = (args.delete(:append) || "")
-        url << "/" unless url.ends_with?("/") and append.blank?
-        append << "?" unless args.blank?
-        append << args.to_query unless args.blank?
-        "#{url}#{append}"
+        url_for(params)
       end
       
       def scoped_url_for(obj)
