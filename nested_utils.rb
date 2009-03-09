@@ -89,7 +89,15 @@ module  Railslove
       end
       
       def current_url(args={})
-        url_for(params)
+        url,query_string = url_for(params).split("?")
+        
+        if append = args.delete(:append)
+          url << "/" unless url.ends_with?("/")
+          url << append.to_s
+        end
+        query = [query_string,args.to_query]
+        query.delete_if{|e| e.blank? }
+        "#{url}?#{query.join("&")}"
       end
       
       def scoped_url_for(obj)
