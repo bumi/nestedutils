@@ -36,7 +36,7 @@ module  Railslove
         type, id = find_polymorphic_type_and_id(level)
         return nil if type.blank? or id.blank?
         return instance_variable_get("@#{type.underscore}".to_sym) if instance_variables.include?("@#{type.underscore}")
-        instance_variable_set("@#{type.underscore}".to_sym, type.constantize.find_by_param!(id)) rescue next 
+        instance_variable_set("@#{type.underscore}".to_sym, type.constantize.find_by_param!(id)) rescue nil 
       end
       
       def polymorphic_object!(level=1)
